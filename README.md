@@ -95,19 +95,44 @@ Bytes 4+  Parameters
 |--------|--------|
 | Set gain to N | `10 ff 0d 3c 00 01 <N>` |
 | Get gain | `10 ff 0d 2c 00 01 00` → gain in byte 7 of response |
+| Get mute state | `10 ff 0d 2c 00 00 00` → byte 7: `0x00` = muted, `0x01` = unmuted |
 | Mute | `10 ff 0d 3c 00 00 00` |
 | Unmute | `10 ff 0d 3c 00 00 01` |
 | Smart Lock on | `11 ff 0d 3c 00 05 07 00 ca 00 00 02 00 00 00 00 00 00 00 00` |
 | Smart Lock off | `11 ff 0d 3c 00 05 06 00 ca 00 00 02 00 00 00 00 00 00 00 00` |
 
-### Physical button events (device → host, read-only)
+Note: there is no known get command for Smart Lock state. The device does not respond
+to func 2 queries with `param=0x05` — it returns a HID++ error (`10 ff ff ...`).
 
-The mute button on the device sends notifications you can listen to:
+### Device-initiated notifications (device → host)
+
+All three physical controls on the device send unsolicited notifications in the same format:
 
 ```
-Button press:   11 ff 0d 20 00 00 00 00 ...
-Button release: 11 ff 0d 20 00 00 01 00 ...
+11 ff 0d 20 00 <type> <value>
 ```
 
-These are input reports from the device, not commands.
+| `type` | `value` | Meaning |
+|--------|---------|---------|
+| `0x00` | `0x00`  | Mute button pressed → muted |
+| `0x00` | `0x01`  | Mute button pressed → unmuted |
+| `0x01` | `0–100` | Gain dial turned → new gain value |
+| `0x05` | `0x00`  | Smart Lock toggled → off |
+| `0x05` | `0x01`  | Smart Lock toggled → on |
+
+These are input reports from the device and fire for both physical controls and
+software-initiated changes (e.g. running `yeti-ctl.py smartlock on` also triggers
+the `0x05` notification). A listener can use these to keep a UI in sync with the
+device state without polling.
+
+### Discovery notes
+
+The get-mute command and all device notifications were discovered by probing the device
+directly rather than from G Hub USB captures. Two helper scripts in this repo were used:
+
+- **`probe.py`** — sends candidate HID++ func 2 queries and prints the raw response bytes,
+  used to confirm `10 ff 0d 2c 00 00 00` returns mute state in byte 7.
+- **`listen.py`** — passively reads and prints every packet the device sends, used to
+  discover the full notification event table above by toggling mute, gain, and Smart Lock
+  while the listener was running.
 
