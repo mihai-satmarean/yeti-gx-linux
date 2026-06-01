@@ -54,7 +54,6 @@ def probe(f, func, params, label):
 with open(HIDRAW, "r+b", buffering=0) as f:
     os.set_blocking(f.fileno(), False)
 
-    probe(f, 2, [0x00, 0x01, 0x00], "get gain")
-    probe(f, 2, [0x00, 0x00, 0x00], "get mute (byte 7: 0x01=unmuted, 0x00=muted?)")
-    probe(f, 1, [0x00, 0x00, 0x00], "func1 getState - watch for smartlock")
-    probe(f, 1, [0x00, 0x05, 0x00], "func1 with smartlock param 0x05")
+    probe(f, 2, [0x00, 0x00, 0x00], "get mute    (known: byte 7 = 0x00 muted, 0x01 unmuted)")
+    probe(f, 2, [0x00, 0x01, 0x00], "get gain    (known: byte 7 = gain 0-100)")
+    probe(f, 2, [0x00, 0x02, 0x00], "get smartlock? (G Hub uses param=0x02, byte 7 = state)")

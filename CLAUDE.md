@@ -21,9 +21,9 @@ GUI on top of it.
 Confirmed by toggling mute and comparing responses.
 
 ### Get smartlock state
-**Not possible.** Func 2 with smartlock params returns HID++ error `10 ff ff ...`.
-No get command exists for smartlock. The UI should default to off on startup and
-track state from notifications after that.
+`10 ff 0d 2c 00 02 00` → byte 7 of response: `0x00` = off, `0x01` = on.
+Discovered from a G Hub USB capture on Windows — G Hub queries params 0x00, 0x01, 0x02
+in sequence at startup to read mute, gain, and smartlock respectively.
 
 ### Device-initiated notifications
 All three physical controls send unsolicited `11 ff 0d 20 00 <type> <value>` packets:
@@ -44,7 +44,8 @@ with YetiGX() as mic:
     mic.set_gain(75)
     muted = mic.get_mute()         # bool
     mic.set_mute(True)
-    mic.set_smartlock(True)        # no getter — device doesn't support it
+    mic.set_smartlock(True)
+    enabled = mic.get_smartlock()  # bool
 
     mic.listen(
         on_mute=lambda muted: ...,      # bool
@@ -68,4 +69,4 @@ with YetiGX() as mic:
 - Choose a UI framework and build the GUI in `ui/`
 - The UI needs: gain slider, mute toggle, smartlock toggle
 - Physical controls should update the UI in real time via `listen()`
-- Smart lock toggle should default to off on startup (no initial state available)
+- Smart lock initial state can be read via `get_smartlock()` on startup

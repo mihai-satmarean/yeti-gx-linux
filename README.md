@@ -96,13 +96,11 @@ Bytes 4+  Parameters
 | Set gain to N | `10 ff 0d 3c 00 01 <N>` |
 | Get gain | `10 ff 0d 2c 00 01 00` → gain in byte 7 of response |
 | Get mute state | `10 ff 0d 2c 00 00 00` → byte 7: `0x00` = muted, `0x01` = unmuted |
+| Get Smart Lock state | `10 ff 0d 2c 00 02 00` → byte 7: `0x00` = off, `0x01` = on |
 | Mute | `10 ff 0d 3c 00 00 00` |
 | Unmute | `10 ff 0d 3c 00 00 01` |
 | Smart Lock on | `11 ff 0d 3c 00 05 07 00 ca 00 00 02 00 00 00 00 00 00 00 00` |
 | Smart Lock off | `11 ff 0d 3c 00 05 06 00 ca 00 00 02 00 00 00 00 00 00 00 00` |
-
-Note: there is no known get command for Smart Lock state. The device does not respond
-to func 2 queries with `param=0x05` — it returns a HID++ error (`10 ff ff ...`).
 
 ### Device-initiated notifications (device → host)
 

@@ -100,7 +100,13 @@ class YetiGX:
         self._send_recv([0x10, DEV_IDX, FEAT_IDX, FUNC_SET_SW, 0x00, 0x00, 0x00 if muted else 0x01])
 
     # --- smartlock ---
-    # Device has no readable state; the UI tracks the toggle itself.
+
+    def get_smartlock(self) -> bool:
+        """Returns True if Smart Lock is enabled."""
+        r = self._send_recv([0x10, DEV_IDX, FEAT_IDX, FUNC_GET_SW, 0x00, 0x02, 0x00])
+        if r and len(r) >= 8:
+            return r[7] == 0x01
+        raise YetiGXError("No response to get_smartlock")
 
     def set_smartlock(self, enabled: bool):
         pkt = [0x11, DEV_IDX, FEAT_IDX, FUNC_SET_SW,
