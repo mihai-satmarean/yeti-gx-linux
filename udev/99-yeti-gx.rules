@@ -1,0 +1,4 @@
+# Logitech Yeti GX (046d:0afc)
+# Grants the locally logged-in user read/write access to the HID++ hidraw node
+# so yeti-ctl.py works without sudo. Replug the microphone after installing.
+SUBSYSTEM=="hidraw", KERNEL=="hidraw*", ATTRS{idVendor}=="046d", ATTRS{idProduct}=="0afc", TAG+="uaccess"
